@@ -1,14 +1,40 @@
 import java.io.File;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.InetAddress;
 
 public class ServerUDP {
     public static void main(String[] args) {
         // Initialize server data
+        int clientPort, serverPort = 3000;
+        byte[] buffer = new byte[65535];
+        String clientData, sendingData;
+        DatagramPacket clientPacket, sendingPacket;
+        InetAddress clientAddress;
 
-        // Set up connection with client
+        try {
+            // Set up connection with client
+            DatagramSocket serverSocket = new DatagramSocket(serverPort);
 
-        // Receive input from client
+            // Start thread loop
+            while (true) {
 
-        // Decrypt data
+                // Output connection message
+                System.out.println("Waiting for connection");
+
+                // Accept socket connection
+                clientPacket = new DatagramPacket(buffer, buffer.length);
+                serverSocket.receive(clientPacket);
+
+                // Create and run new thread
+                new HandleClientUDP().run();
+
+            }
+        } catch (Exception E) {
+
+        }
+
+
 
     }
 
