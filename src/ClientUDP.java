@@ -7,11 +7,13 @@ public class ClientUDP {
         try {
             // Prompt and get info from user
 
-            // Verify and Encode data
+            // Verify and Encode input
 
             // Send data to server
 
             // Receive data from server
+
+            // Decode data
 
             // Output data or error message to user
 
