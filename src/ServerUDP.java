@@ -6,11 +6,13 @@ import java.net.InetAddress;
 public class ServerUDP {
     public static void main(String[] args) {
         // Initialize server data
-        int clientPort, serverPort = 3000;
+        int serverPort = 3000;
         byte[] buffer = new byte[65535];
         String clientData, sendingData;
         DatagramPacket clientPacket, sendingPacket;
         InetAddress clientAddress;
+
+        // Initialize database
 
         try {
             // Set up connection with client
@@ -27,8 +29,10 @@ public class ServerUDP {
                 serverSocket.receive(clientPacket);
 
                 // Create and run new thread
-                new HandleClientUDP().run();
+                new HandleClientUDP(clientPacket).run();
 
+                // Reset buffer for next request
+                buffer = new byte[1000];
             }
         } catch (Exception E) {
 
@@ -40,6 +44,7 @@ public class ServerUDP {
 
     private static void initializeServerData(File inputFile) {
         // Reads data into a data collection
+            // Linked list
 
         // Returns data collection to main
     }
