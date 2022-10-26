@@ -1,27 +1,38 @@
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
+import java.net.InetAddress;
 import java.util.Scanner;
 
 public class ClientUDP {
     public static void main(String[] args) {
         // Initialize variables
-        String nameInput, firstNameInput = "", lastNameInput = "";
         boolean dataVerify = false;
-        DatagramPacket clientPacket;
+        byte[] buffer = new byte[65535];
+        int serverPort, encryptKey;
+        String firstNameInput = "", lastNameInput = "",
+                clientString, serverString,
+                encryptedFirstName, encryptedLastName, encryptedkey,
+                clientEncryptedString, serverEncryptedString,
+                ssnString = "Invalid user name";
+        DatagramPacket clientPacket, serverPacket;
+        InetAddress serverAddress;
         Scanner input = new Scanner(System.in);
 
         try {
             // Set up connection with server
-            DatagramSocket clientSocket = new DatagramSocket()
+            DatagramSocket clientSocket = new DatagramSocket();
+            serverPort = 3000;
+            // TODO CHANGE TO SERVER IP WHEN FINISHED
+            serverAddress = InetAddress.getByName("localhost");
 
             // Loop till name input is correct
             do {
                 try {
                     // Prompt for data from user
                     System.out.println("Enter the first name: ");
-                    firstNameInput = input.next().trim().toLowerCase();
+                    firstNameInput = input.next().trim().toUpperCase();
                     System.out.println("Enter the last name: ");
-                    lastNameInput = input.next().trim().toLowerCase();
+                    lastNameInput = input.next().trim().toUpperCase();
 
                 } catch (Exception e) {}
 
@@ -34,16 +45,51 @@ public class ClientUDP {
             } while (dataVerify);
 
             // Encode input
+            encryptKey = 2;
+            encryptedFirstName = keyEncoding(firstNameInput, encryptKey);
+            encryptedLastName = keyEncoding(lastNameInput, encryptKey);
+            encryptedkey = keyEncoding(String.valueOf(encryptKey), encryptKey);
 
+            clientString = encryptedFirstName + "_" + encryptedLastName + "_" + encryptedkey;
+            // TODO TEST ENCRYPT METHOD
+            clientEncryptedString = keyEncoding(clientString, encryptKey);
 
-            // Send data to server
+            // Output encrypted name and key
+            System.out.println("Encrypted user name: " + encryptedFirstName + encryptedLastName);
+            System.out.println("Encrypted key: " + encryptedkey);
 
+            // Create packet of encrypted data for server address and port
+            clientPacket = new DatagramPacket(clientEncryptedString.getBytes(),
+                    clientEncryptedString.getBytes().length, serverAddress, serverPort);
 
-            // Receive data from server
+            // Send data to server from socket connection
+            clientSocket.send(clientPacket);
+
+            // Receive encrypted data from server
+            serverPacket = new DatagramPacket(buffer, buffer.length);
+            clientSocket.receive(serverPacket);
+
+            // Separate encrypted data from packet
+            serverEncryptedString = new String(serverPacket.getData(), 0, serverPacket.getLength());
 
             // Decode data
+            // TODO TEST DECRYPT METHOD
+            serverString = keyDecoding(serverEncryptedString, 2);
 
             // Output data or error message to user
+            try {
+                // Check if returned number is == -1
+                if (Integer.parseInt(serverString) == -1) {
+                    // Invalid name input
+                    ssnString = "Invalid user name";
+
+                } else {
+                    // SSN returned
+                    ssnString = serverString;
+                }
+            } catch (Exception e) {}
+
+            System.out.println("SSN: " + ssnString);
 
         } catch (Exception e) {
 
@@ -139,7 +185,7 @@ public class ClientUDP {
     }
 
     private static String keyEncoding(String message, int key) {
-        final String ALPHABET = "abcdefghijklmnopqrstuvwxyz";
+        final String ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVQXYZ";
         char messageChar;
         char[] messageCharArray = message.toCharArray();
         String encodedMessage = "";
@@ -170,7 +216,7 @@ public class ClientUDP {
     }
 
     private static String keyDecoding(String message, int key) {
-        final String ALPHABET = "abcdefghijklmnopqrstuvwxyz";
+        final String ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVQXYZ";
         char messageChar;
         char[] messageCharArray = message.toCharArray();
         String decodedMessage = "";
