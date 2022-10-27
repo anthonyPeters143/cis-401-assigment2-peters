@@ -7,15 +7,17 @@ import java.util.LinkedList;
 import java.util.Scanner;
 
 public class ServerUDP {
-    public static void main(String[] args) {
+    public static void main(String[] args) throws FileNotFoundException {
         // Initialize server data
         int serverPort = 3000;
         byte[] buffer = new byte[65535];
-        String clientData, sendingData;
+        String clientData, sendingData, fileName = "Sample.txt";
         DatagramPacket clientPacket, sendingPacket;
         InetAddress clientAddress;
+        LinkedList<ssnNode> ssnLinkedList;
 
         // Initialize database
+        ssnLinkedList = initializeServerData(fileName);
 
         try {
             // Set up connection with client
@@ -31,7 +33,7 @@ public class ServerUDP {
                 serverSocket.receive(clientPacket);
 
                 // Create and run new thread
-                new HandleClientUDP(clientPacket).run();
+                new HandleClientUDP(clientPacket, ssnLinkedList).run();
 
                 // Reset buffer for next request
                 buffer = new byte[1000];
@@ -44,32 +46,32 @@ public class ServerUDP {
 
     }
 
-    private static void initializeServerData(File inputFile) throws FileNotFoundException {
-        // Reads data into a data collection
-            // Linked list
-
-        // Returns data collection to main
-
+    private static LinkedList<ssnNode> initializeServerData(String inputFileName) throws FileNotFoundException {
         // Create file and LinkedList
-        File ssnFile = new File("src/" + String.valueOf(inputFile));
+        File ssnFile = new File("src/" + inputFileName);
         LinkedList<ssnNode> ssnList = new LinkedList<>();
 
         // Create Scanner for data document
         Scanner fileScanner = new Scanner(ssnFile);
 
+        // Cycle past headers of data
+//        fileScanner.nextLine();
+        fileScanner.nextLine();
+        fileScanner.nextLine();
+//        fileScanner.next();
+
         // Input data from txt file to Linked list of dictionaryEntry objects
         while (fileScanner.hasNext()){
             // Input new line of test and split by tab chars
-            fileScanner.nextLine().replaceAll()
             String[] splitInput = fileScanner.nextLine().split("\t");
 
-            // Add SSN Node to LinkedList
-            ssnList.add()
-
-            ssnList.addNode(new DictionaryEntry(splitInput[0], splitInput[1]));
+            // Add SSN Node including firstName, lastName, and ssn to LinkedList
+            // TODO NEED TO TEST
+            ssnList.add(new ssnNode(splitInput[0], splitInput[2], splitInput[4].trim()));
         }
 
-        return dictionaryList;
+        // Returns data collection to main
+        return ssnList;
     }
 
 

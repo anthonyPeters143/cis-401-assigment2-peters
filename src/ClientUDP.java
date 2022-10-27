@@ -8,7 +8,7 @@ public class ClientUDP {
         // Initialize variables
         boolean dataVerify = false;
         byte[] buffer = new byte[65535];
-        int serverPort, encryptKey;
+        int serverPort, encryptKey = 2;
         String firstNameInput = "", lastNameInput = "",
                 clientString, serverString,
                 encryptedFirstName, encryptedLastName, encryptedkey,
@@ -29,23 +29,22 @@ public class ClientUDP {
             do {
                 try {
                     // Prompt for data from user
-                    System.out.println("Enter the first name: ");
+                    System.out.print("Enter the first name: ");
                     firstNameInput = input.next().trim().toUpperCase();
-                    System.out.println("Enter the last name: ");
+                    System.out.print("Enter the last name: ");
                     lastNameInput = input.next().trim().toUpperCase();
 
                 } catch (Exception e) {}
 
                 // Verify data doesn't contain any digits
-                if (firstNameInput.matches("/D") && lastNameInput.matches("/D")) {
+                if (firstNameInput.matches("\\D+") && lastNameInput.matches("\\D+")) {
                     // Input correct
                     dataVerify = true;
                 }
 
-            } while (dataVerify);
+            } while (!dataVerify);
 
             // Encode input
-            encryptKey = 2;
             encryptedFirstName = keyEncoding(firstNameInput, encryptKey);
             encryptedLastName = keyEncoding(lastNameInput, encryptKey);
             encryptedkey = keyEncoding(String.valueOf(encryptKey), encryptKey);
@@ -185,7 +184,7 @@ public class ClientUDP {
     }
 
     private static String keyEncoding(String message, int key) {
-        final String ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVQXYZ";
+        final String ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
         char messageChar;
         char[] messageCharArray = message.toCharArray();
         String encodedMessage = "";
@@ -196,10 +195,14 @@ public class ClientUDP {
             messageChar = messageCharArray[i];
 
             // Test char and encode if possible
-            if (messageChar == '_')
+            if (messageChar == '_' || messageChar == '-')
             {
                 // Skip encoding the dividing char
                 encodedMessage = encodedMessage.concat(String.valueOf(messageChar));
+
+            } else if (String.valueOf(messageChar).matches("\\d") ) {
+                // Char is numerical
+                encodedMessage = encodedMessage.concat(String.valueOf(key + (int) messageChar));
 
             } else {
                 // Find position of char within alphabet then concat the encoded char to message
@@ -216,7 +219,7 @@ public class ClientUDP {
     }
 
     private static String keyDecoding(String message, int key) {
-        final String ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVQXYZ";
+        final String ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
         char messageChar;
         char[] messageCharArray = message.toCharArray();
         String decodedMessage = "";
@@ -231,6 +234,10 @@ public class ClientUDP {
             {
                 // Skip decoding the dividing char
                 decodedMessage = decodedMessage.concat(String.valueOf(messageChar));
+
+            } else if (String.valueOf(messageChar).matches("\\d") ) {
+            // Char is numerical
+            decodedMessage = decodedMessage.concat(String.valueOf((int) messageChar - key));
 
             } else {
                 // Find position of char within alphabet then concat the decoded char to message
