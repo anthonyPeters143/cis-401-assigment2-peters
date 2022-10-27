@@ -20,7 +20,7 @@ public class HandleClientUDP {
 
     public void run() {
         // Receive input from client
-
+        
 
         // Decrypt data
             // Method in ClientUDP

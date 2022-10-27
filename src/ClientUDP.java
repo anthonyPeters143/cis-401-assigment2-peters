@@ -44,6 +44,9 @@ public class ClientUDP {
 
             } while (!dataVerify);
 
+            // TODO TESTING
+            String ab = keyEncoding("105864", 2);
+
             // Encode input
             encryptedFirstName = keyEncoding(firstNameInput, encryptKey);
             encryptedLastName = keyEncoding(lastNameInput, encryptKey);
@@ -202,7 +205,7 @@ public class ClientUDP {
 
             } else if (String.valueOf(messageChar).matches("\\d") ) {
                 // Char is numerical
-                encodedMessage = encodedMessage.concat(String.valueOf(key + (int) messageChar));
+                encodedMessage = encodedMessage.concat(String.valueOf((char) (key + messageChar)));
 
             } else {
                 // Find position of char within alphabet then concat the encoded char to message
@@ -236,8 +239,8 @@ public class ClientUDP {
                 decodedMessage = decodedMessage.concat(String.valueOf(messageChar));
 
             } else if (String.valueOf(messageChar).matches("\\d") ) {
-            // Char is numerical
-            decodedMessage = decodedMessage.concat(String.valueOf((int) messageChar - key));
+                // Char is numerical
+                decodedMessage = decodedMessage.concat(String.valueOf((char) (key - messageChar)));
 
             } else {
                 // Find position of char within alphabet then concat the decoded char to message

@@ -55,10 +55,8 @@ public class ServerUDP {
         Scanner fileScanner = new Scanner(ssnFile);
 
         // Cycle past headers of data
-//        fileScanner.nextLine();
         fileScanner.nextLine();
         fileScanner.nextLine();
-//        fileScanner.next();
 
         // Input data from txt file to Linked list of dictionaryEntry objects
         while (fileScanner.hasNext()){
