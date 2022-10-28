@@ -3,40 +3,148 @@ import java.net.InetAddress;
 import java.util.LinkedList;
 
 public class HandleClientUDP {
-    int clientPort;
+    int clientPort, key;
     String clientMessage;
     DatagramPacket clientPacket;
     InetAddress clientAddress;
     LinkedList<ssnNode> databaseLinkedList;
 
-    HandleClientUDP(DatagramPacket packet, LinkedList<ssnNode> databaseInput) {
+    HandleClientUDP(DatagramPacket packet, int keyInput, LinkedList<ssnNode> databaseInput) {
         // Store packet and packet data
         clientPacket = packet;
         clientPort = packet.getPort();
         clientAddress = packet.getAddress();
         clientMessage = new String(packet.getData()).trim();
+        key = keyInput;
         databaseLinkedList = databaseInput;
     }
 
     public void run() {
-        // Receive input from client
-        
+
+        String encryptedFirstName, encryptedLastName, encryptedKey,
+            decryptedFirstName, decryptedLastName, decryptedKey,
+            reply;
+        String [] splitClientInput;
+        ssnNode entry;
+
+        // Separate name and key values, separated by "_"
+        splitClientInput = clientMessage.split("_");
+        encryptedFirstName = splitClientInput[0];
+        encryptedLastName = splitClientInput[1];
+        encryptedKey = splitClientInput[2];
 
         // Decrypt data
-            // Method in ClientUDP
+        decryptedFirstName = keyDecoding(encryptedFirstName, key);
+        decryptedLastName = keyDecoding(encryptedLastName, key);
+        decryptedKey = keyDecoding(encryptedKey, key);
 
-        // Separate name fields
-            // Name inputs separated by "_"
-
-        // Check data collection
+        // Check data collection for entry
+        entry = searchDatabaseForNames(decryptedFirstName, decryptedLastName, databaseLinkedList);
 
         // Create reply
-            // Return SSN if both names match, if not return -1
+        if (entry != null) {
+            // Entry found, get ssn value from entry
+            reply = entry.getSsn();
+
+        } else {
+            // Entry matching inputs is not found, return -1
+            reply = "-1";
+
+        }
 
         // Encrypt data
-            // Method in ClientUDP
+        keyEncoding()
+
 
     }
 
+    private static ssnNode searchDatabaseForNames(String firstName, String lastName, LinkedList<ssnNode> database) {
+        // Cycle through linked list to find node matching first and last name
+        for (int index = 0; index < database.size(); index++) {
+            if (database.get(index).getFirstName().matches(firstName) &&
+                    database.get(index).getLastName().matches(lastName)) {
+                // First and last name match database entry
+                return database.get(index);
+            }
+        }
+
+        // No entries match first and last values return null
+        return null;
+    }
+
+    private static String keyEncoding(String message, int key) {
+        final String ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        char messageChar;
+        char[] messageCharArray = message.toCharArray();
+        String encodedMessage = "";
+
+        // Loop though message chars
+        for (int i = 0; i < message.length(); i++) {
+            // Initialize char from array
+            messageChar = messageCharArray[i];
+
+            // Test char and encode if possible
+            if (messageChar == '_' || messageChar == '-')
+            {
+                // Skip encoding the dividing char
+                encodedMessage = encodedMessage.concat(String.valueOf(messageChar));
+
+            } else if (String.valueOf(messageChar).matches("\\d") ) {
+                // Char is numerical
+                encodedMessage = encodedMessage.concat(String.valueOf((char) (key + (int) messageChar)));
+
+            } else {
+                // Find position of char within alphabet then concat the encoded char to message
+                int position = (key + ALPHABET.indexOf(messageChar)) % 26;
+
+                encodedMessage = encodedMessage.concat(String.valueOf(
+                        ALPHABET.charAt(position))
+                );
+
+            }
+        }
+
+        return encodedMessage;
+    }
+
+    private static String keyDecoding(String message, int key) {
+        final String ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        char messageChar;
+        char[] messageCharArray = message.toCharArray();
+        String decodedMessage = "";
+
+        // Loop though message chars
+        for (int i = 0; i < message.length(); i++) {
+            // Initialize char from array
+            messageChar = messageCharArray[i];
+
+            // Test char and decode if possible
+            if (messageChar == '_')
+            {
+                // Skip decoding the dividing char
+                decodedMessage = decodedMessage.concat(String.valueOf(messageChar));
+
+            } else if (String.valueOf(messageChar).matches("\\d") ) {
+                // Char is numerical
+                decodedMessage = decodedMessage.concat(String.valueOf((char) ((int) messageChar - key)));
+
+            } else {
+                // Find position of char within alphabet then concat the decoded char to message
+                int position = (ALPHABET.indexOf(messageChar) - key) % 26;
+
+                // Circle around to other side of alphabet if position is negative
+                if (position < 0) {
+                    position = ALPHABET.length() + position;
+                }
+
+                decodedMessage = decodedMessage.concat(String.valueOf(
+                        ALPHABET.charAt(position))
+                );
+
+            }
+        }
+
+        return decodedMessage;
+    }
 
 }

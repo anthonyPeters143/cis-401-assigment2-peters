@@ -9,7 +9,7 @@ import java.util.Scanner;
 public class ServerUDP {
     public static void main(String[] args) throws FileNotFoundException {
         // Initialize server data
-        int serverPort = 3000;
+        int serverPort = 3000, key = 2;
         byte[] buffer = new byte[65535];
         String clientData, sendingData, fileName = "Sample.txt";
         DatagramPacket clientPacket, sendingPacket;
@@ -33,7 +33,7 @@ public class ServerUDP {
                 serverSocket.receive(clientPacket);
 
                 // Create and run new thread
-                new HandleClientUDP(clientPacket, ssnLinkedList).run();
+                new HandleClientUDP(clientPacket, key, ssnLinkedList).run();
 
                 // Reset buffer for next request
                 buffer = new byte[1000];
@@ -64,7 +64,6 @@ public class ServerUDP {
             String[] splitInput = fileScanner.nextLine().split("\t");
 
             // Add SSN Node including firstName, lastName, and ssn to LinkedList
-            // TODO NEED TO TEST
             ssnList.add(new ssnNode(splitInput[0], splitInput[2], splitInput[4].trim()));
         }
 
