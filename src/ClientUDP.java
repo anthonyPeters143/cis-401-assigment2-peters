@@ -1,6 +1,8 @@
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
+import java.util.IllegalFormatConversionException;
+import java.util.Objects;
 import java.util.Scanner;
 
 public class ClientUDP {
@@ -10,10 +12,11 @@ public class ClientUDP {
         byte[] buffer = new byte[65535];
         int serverPort, encryptKey = 2;
         String firstNameInput = "", lastNameInput = "",
-                clientString, serverString,
-                encryptedFirstName, encryptedLastName, encryptedkey,
-                clientEncryptedString, serverEncryptedString,
-                ssnString = "Invalid user name";
+                encryptedFirstName, encryptedLastName, encryptedClientKey,
+                clientEncryptedString,
+                encryptedSsn, encryptedServerKey,
+                decryptedSsn, decryptedServerKey,
+                ssnString;
         DatagramPacket clientPacket, serverPacket;
         InetAddress serverAddress;
         Scanner input = new Scanner(System.in);
@@ -40,19 +43,22 @@ public class ClientUDP {
                 if (firstNameInput.matches("\\D+") && lastNameInput.matches("\\D+")) {
                     // Input correct
                     dataVerify = true;
+                } else {
+                    // Output error message to user
+                    System.out.println("Error, please reenter name inputs\n");
                 }
 
             } while (!dataVerify);
 
-            // Encode input
+            // Encode inputs
             encryptedFirstName = keyEncoding(firstNameInput, encryptKey);
             encryptedLastName = keyEncoding(lastNameInput, encryptKey);
-            encryptedkey = keyEncoding(String.valueOf(encryptKey), encryptKey);
-            clientEncryptedString = encryptedFirstName + "_" + encryptedLastName + "_" + encryptedkey;
+            encryptedClientKey = keyEncoding(String.valueOf(encryptKey), encryptKey);
+            clientEncryptedString = encryptedFirstName + "_" + encryptedLastName + "_" + encryptedClientKey;
 
             // Output encrypted name and key
             System.out.println("Encrypted user name: " + encryptedFirstName + encryptedLastName);
-            System.out.println("Encrypted key: " + encryptedkey);
+            System.out.println("Encrypted key: " + encryptedClientKey);
 
             // Create packet of encrypted data for server address and port
             clientPacket = new DatagramPacket(clientEncryptedString.getBytes(),
@@ -65,31 +71,30 @@ public class ClientUDP {
             serverPacket = new DatagramPacket(buffer, buffer.length);
             clientSocket.receive(serverPacket);
 
-            // Separate encrypted data from packet
-            serverEncryptedString = new String(serverPacket.getData(), 0, serverPacket.getLength());
+            // Separate encrypted data into ssn and key from packet
+            String[] splitServerString = new String(serverPacket.getData(), 0, serverPacket.getLength()).split("_");
+            encryptedSsn = splitServerString[0];
+            encryptedServerKey = splitServerString[1];
 
             // Decode data
-            // TODO TEST DECRYPT METHOD
-            serverString = keyDecoding(serverEncryptedString, 2);
+            decryptedSsn = keyDecoding(encryptedSsn, 2);
+            decryptedServerKey = keyDecoding(encryptedServerKey, 2);
 
-            // Output data or error message to user
-            try {
-                // Check if returned number is == -1
-                if (Integer.parseInt(serverString) == -1) {
-                    // Invalid name input
-                    ssnString = "Invalid user name";
+            // Check if returned number is == -1
+            if (Objects.equals(decryptedSsn, "-1")) {
+                // Invalid name input
+                ssnString = "Invalid user name";
 
-                } else {
-                    // SSN returned
-                    ssnString = serverString;
-                }
-            } catch (Exception e) {}
+            } else {
+                // SSN returned
+                ssnString = decryptedSsn;
 
+            }
+
+            // Output ssn to user
             System.out.println("SSN: " + ssnString);
 
-        } catch (Exception e) {
-
-        }
+        } catch (Exception e) {}
 
     }
 

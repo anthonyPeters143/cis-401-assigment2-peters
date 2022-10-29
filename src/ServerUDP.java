@@ -11,9 +11,8 @@ public class ServerUDP {
         // Initialize server data
         int serverPort = 3000, key = 2;
         byte[] buffer = new byte[65535];
-        String clientData, sendingData, fileName = "Sample.txt";
-        DatagramPacket clientPacket, sendingPacket;
-        InetAddress clientAddress;
+        String fileName = "Sample.txt";
+        DatagramPacket clientPacket;
         LinkedList<ssnNode> ssnLinkedList;
 
         // Initialize database
@@ -33,16 +32,12 @@ public class ServerUDP {
                 serverSocket.receive(clientPacket);
 
                 // Create and run new thread
-                new HandleClientUDP(clientPacket, key, ssnLinkedList).run();
+                new HandleClientUDP(clientPacket, key, serverSocket, ssnLinkedList).run();
 
                 // Reset buffer for next request
                 buffer = new byte[1000];
             }
-        } catch (Exception E) {
-
-        }
-
-
+        } catch (Exception E) {}
 
     }
 
@@ -64,7 +59,7 @@ public class ServerUDP {
             String[] splitInput = fileScanner.nextLine().split("\t");
 
             // Add SSN Node including firstName, lastName, and ssn to LinkedList
-            ssnList.add(new ssnNode(splitInput[0], splitInput[2], splitInput[4].trim()));
+            ssnList.add(new ssnNode(splitInput[0].trim(), splitInput[2].trim(), splitInput[4].trim()));
         }
 
         // Returns data collection to main

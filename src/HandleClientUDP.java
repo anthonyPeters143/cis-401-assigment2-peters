@@ -1,4 +1,5 @@
 import java.net.DatagramPacket;
+import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.util.LinkedList;
 
@@ -7,71 +8,69 @@ public class HandleClientUDP {
     String clientMessage;
     DatagramPacket clientPacket;
     InetAddress clientAddress;
+    DatagramSocket server;
     LinkedList<ssnNode> databaseLinkedList;
 
-    HandleClientUDP(DatagramPacket packet, int keyInput, LinkedList<ssnNode> databaseInput) {
+    HandleClientUDP(DatagramPacket packet, int keyInput, DatagramSocket serverInput, LinkedList<ssnNode> databaseInput) {
         // Store packet and packet data
         clientPacket = packet;
         clientPort = packet.getPort();
         clientAddress = packet.getAddress();
         clientMessage = new String(packet.getData()).trim();
         key = keyInput;
+        server = serverInput;
         databaseLinkedList = databaseInput;
     }
 
     public void run() {
-
+        // Initialize variables
         String encryptedFirstName, encryptedLastName, encryptedKey, encryptedSsn, encryptedResponse,
-            decryptedFirstName, decryptedLastName, decryptedKey, decryptedSsn, decryptedResponse;
-        String [] splitClientInput;
+                decryptedFirstName, decryptedLastName, decryptedKey, decryptedSsn, decryptedResponse;
+        String[] splitClientInput;
         ssnNode entry;
         DatagramPacket responsePacket;
 
-        // Separate name and key values, separated by "_"
-        splitClientInput = clientMessage.split("_");
-        encryptedFirstName = splitClientInput[0];
-        encryptedLastName = splitClientInput[1];
-        encryptedKey = splitClientInput[2];
+        try {
+            // Separate name and key values, separated by "_"
+            splitClientInput = clientMessage.split("_");
+            encryptedFirstName = splitClientInput[0];
+            encryptedLastName = splitClientInput[1];
+            encryptedKey = splitClientInput[2];
 
-        // Decrypt data
-        decryptedFirstName = keyDecoding(encryptedFirstName, key);
-        decryptedLastName = keyDecoding(encryptedLastName, key);
-        decryptedKey = keyDecoding(encryptedKey, key);
+            // Decrypt data
+            decryptedFirstName = keyDecoding(encryptedFirstName, key);
+            decryptedLastName = keyDecoding(encryptedLastName, key);
+            decryptedKey = keyDecoding(encryptedKey, key);
 
-        // Check data collection for entry
-        entry = searchDatabaseForNames(decryptedFirstName, decryptedLastName, databaseLinkedList);
+            // Check data collection for entry
+            entry = searchDatabaseForNames(decryptedFirstName, decryptedLastName, databaseLinkedList);
 
-        // Store ssn value
-        if (entry != null) {
-            // Entry found, get ssn value from entry
-            decryptedSsn = entry.getSsn();
+            // Store ssn value
+            if (entry != null) {
+                // Entry found, get ssn value from entry
+                decryptedSsn = entry.getSsn();
 
-        } else {
-            // Entry matching inputs is not found, return -1
-            decryptedSsn = "-1";
+            } else {
+                // Entry matching inputs is not found, return -1
+                decryptedSsn = "-1";
 
-        }
+            }
 
-        // Encrypt data
-        encryptedSsn = keyEncoding(decryptedSsn, key);
-        encryptedKey = keyEncoding(decryptedKey, key);
+            // Encrypt data
+            encryptedSsn = keyEncoding(decryptedSsn, key);
+            encryptedKey = keyEncoding(decryptedKey, key);
 
-        // Create response
-        encryptedResponse = encryptedSsn + "_" + encryptedKey;
+            // Create response
+            encryptedResponse = encryptedSsn + "_" + encryptedKey;
 
-        // Create response packet for client address and port
-        responsePacket = new DatagramPacket(encryptedResponse.getBytes(),
-                encryptedResponse.getBytes().length, clientAddress, clientPort);
+            // Create response packet for client address and port
+            responsePacket = new DatagramPacket(encryptedResponse.getBytes(),
+                    encryptedResponse.getBytes().length, clientAddress, clientPort);
 
-        // Send data to client from socket connection
+            // Send data to client from socket connection
+            server.send(responsePacket);
 
-
-//            // Create packet of encrypted data for server address and port
-//            clientPacket = new DatagramPacket(clientEncryptedString.getBytes(),
-//                    clientEncryptedString.getBytes().length, serverAddress, serverPort);
-//
-//            // Send data to server from socket connection
-//            clientSocket.send(clientPacket);
+        } catch (Exception e) {}
     }
 
     private static ssnNode searchDatabaseForNames(String firstName, String lastName, LinkedList<ssnNode> database) {
