@@ -105,7 +105,12 @@ public class ClientUDP {
             messageChar = messageCharArray[i];
 
             // Test char and encode if possible
-            if (String.valueOf(messageChar).matches("\\d") ) {
+            if (messageChar == '_' || messageChar == '-')
+            {
+                // Skip encoding the dividing char
+                encodedMessage = encodedMessage.concat(String.valueOf(messageChar));
+
+            } else if (String.valueOf(messageChar).matches("\\d") ) {
                 // Char is numerical
                 encodedMessage = encodedMessage.concat(String.valueOf((char) (key + (int) messageChar)));
 
@@ -135,7 +140,12 @@ public class ClientUDP {
             messageChar = messageCharArray[i];
 
             // Test char and decode if possible
-            if (String.valueOf(messageChar).matches("\\d") ) {
+            if (messageChar == '_' || messageChar == '-')
+            {
+                // Skip decoding the dividing char
+                decodedMessage = decodedMessage.concat(String.valueOf(messageChar));
+
+            } else if (String.valueOf(messageChar).matches("\\d") ) {
                 // Char is numerical
                 decodedMessage = decodedMessage.concat(String.valueOf((char) ((int) messageChar - key)));
 

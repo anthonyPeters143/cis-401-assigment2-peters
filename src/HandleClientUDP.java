@@ -21,11 +21,11 @@ public class HandleClientUDP {
 
     public void run() {
 
-        String encryptedFirstName, encryptedLastName, encryptedKey,
-            decryptedFirstName, decryptedLastName, decryptedKey,
-            reply;
+        String encryptedFirstName, encryptedLastName, encryptedKey, encryptedSsn, encryptedResponse,
+            decryptedFirstName, decryptedLastName, decryptedKey, decryptedSsn, decryptedResponse;
         String [] splitClientInput;
         ssnNode entry;
+        DatagramPacket responsePacket;
 
         // Separate name and key values, separated by "_"
         splitClientInput = clientMessage.split("_");
@@ -41,21 +41,37 @@ public class HandleClientUDP {
         // Check data collection for entry
         entry = searchDatabaseForNames(decryptedFirstName, decryptedLastName, databaseLinkedList);
 
-        // Create reply
+        // Store ssn value
         if (entry != null) {
             // Entry found, get ssn value from entry
-            reply = entry.getSsn();
+            decryptedSsn = entry.getSsn();
 
         } else {
             // Entry matching inputs is not found, return -1
-            reply = "-1";
+            decryptedSsn = "-1";
 
         }
 
         // Encrypt data
-        keyEncoding()
+        encryptedSsn = keyEncoding(decryptedSsn, key);
+        encryptedKey = keyEncoding(decryptedKey, key);
+
+        // Create response
+        encryptedResponse = encryptedSsn + "_" + encryptedKey;
+
+        // Create response packet for client address and port
+        responsePacket = new DatagramPacket(encryptedResponse.getBytes(),
+                encryptedResponse.getBytes().length, clientAddress, clientPort);
+
+        // Send data to client from socket connection
 
 
+//            // Create packet of encrypted data for server address and port
+//            clientPacket = new DatagramPacket(clientEncryptedString.getBytes(),
+//                    clientEncryptedString.getBytes().length, serverAddress, serverPort);
+//
+//            // Send data to server from socket connection
+//            clientSocket.send(clientPacket);
     }
 
     private static ssnNode searchDatabaseForNames(String firstName, String lastName, LinkedList<ssnNode> database) {
@@ -119,7 +135,7 @@ public class HandleClientUDP {
             messageChar = messageCharArray[i];
 
             // Test char and decode if possible
-            if (messageChar == '_')
+            if (messageChar == '_' || messageChar == '-')
             {
                 // Skip decoding the dividing char
                 decodedMessage = decodedMessage.concat(String.valueOf(messageChar));
