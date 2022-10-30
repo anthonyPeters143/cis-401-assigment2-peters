@@ -3,15 +3,32 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.util.LinkedList;
 
+/**
+ * Class: HandleClientUDP, Used to handle threads from ServerUDP. Will create a thread using DatagramPacket, key,
+ * DatagramSocket, and database from serverUDP. Will receive, decrypt, and separate packet from ServerUDP, then search
+ * database for entry with matching first and last name values. If values match then response to client will be ssn
+ * value, if not matching then ssn value will be -1.
+ *
+ * @author Anthony Peters
+ */
 public class HandleClientUDP {
     int clientPort, key;
     String clientMessage;
     DatagramPacket clientPacket;
     InetAddress clientAddress;
     DatagramSocket server;
-    LinkedList<ssnNode> databaseLinkedList;
+    LinkedList<SsnNode> databaseLinkedList;
 
-    HandleClientUDP(DatagramPacket packet, int keyInput, DatagramSocket serverInput, LinkedList<ssnNode> databaseInput) {
+    /**
+     * Method: HandleClientUDP constructor, Argument-constructor that needs DatagramPacket, key, DatagramSocket, and
+     * database. Will create packet, port, address, message, key, server address, and database variables.
+     *
+     * @param packet DatagramPacket, Client packet
+     * @param keyInput int, Key value input
+     * @param serverInput DatagramSocket, Server memory address
+     * @param databaseInput LinkedList, Database of SsnNodes
+     */
+    HandleClientUDP(DatagramPacket packet, int keyInput, DatagramSocket serverInput, LinkedList<SsnNode> databaseInput) {
         // Store packet and packet data
         clientPacket = packet;
         clientPort = packet.getPort();
@@ -22,12 +39,20 @@ public class HandleClientUDP {
         databaseLinkedList = databaseInput;
     }
 
+    /**
+     * Method: run, Will initialize encrypted and decrypted versions of firstName, lastName, key, ssn, response strings,
+     * string array, SsnNode, and a response packet. Program will split input into firstName, lastName, and key values
+     * that are separated by "_" characters. Next the values will be decrypted using key value, then the database will
+     * be searched for entry matching values. If found then ssn and key values will be encrypted and send back in
+     * response packet to client connection. If not found then "-1" and key values will be sent back in the response
+     * packet.
+     */
     public void run() {
         // Initialize variables
         String encryptedFirstName, encryptedLastName, encryptedKey, encryptedSsn, encryptedResponse,
                 decryptedFirstName, decryptedLastName, decryptedKey, decryptedSsn, decryptedResponse;
         String[] splitClientInput;
-        ssnNode entry;
+        SsnNode entry;
         DatagramPacket responsePacket;
 
         try {
@@ -73,7 +98,18 @@ public class HandleClientUDP {
         } catch (Exception e) {}
     }
 
-    private static ssnNode searchDatabaseForNames(String firstName, String lastName, LinkedList<ssnNode> database) {
+    /**
+     * Method: searchDatabaseForNames, Used to search copy of database LinkedList containing SsnNodes of entries using
+     * strings of firstName, lastName and LinkedList database. Will cycle through LinkedList using for loop, for each
+     * entry the program will test if firstName and lastName values matched the passed name values. If they are found
+     * then the SsnNode will be returned. If not found then null will be returned.
+     *
+     * @param firstName String, First name value to search for
+     * @param lastName String, Last name value to search for
+     * @param database LinkedList, Database of SsnNodes
+     * @return SsnNode, Matching SsnNode
+     */
+    private static SsnNode searchDatabaseForNames(String firstName, String lastName, LinkedList<SsnNode> database) {
         // Cycle through linked list to find node matching first and last name
         for (int index = 0; index < database.size(); index++) {
             if (database.get(index).getFirstName().matches(firstName) &&

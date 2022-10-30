@@ -15,11 +15,11 @@ public class ClientUDP {
 
     /**
      * Method: main, Used to drive ClientUDP for client side of connection with server. Software initializes needed
-     * variables, then sets up datagram socket connection with given IP address and port number 3000. After will prompt
-     * user for first and last name inputs (inputs can only be alphabetical characters, if not then user will be
-     * prompted), then inputs and key will be encoding user with key value of 2. Software will output encrypted names to
-     * user then create a datagram packet with data corresponding to pattern "firstName_lastName_key". Then the packet
-     * will be sent to server. After packet is sent then software will wait for response packet from server. When
+     * variables, then sets up datagram socket connection with IP address "192.168.0.156" and port number 3000. After
+     * will prompt user for first and last name inputs (inputs can only be alphabetical characters, if not then user
+     * will be prompted), then inputs and key will be encoding user with key value of 2. Software will output encrypted
+     * names to user then create a datagram packet with data corresponding to pattern "firstName_lastName_key". Then the
+     * packet will be sent to server. After packet is sent then software will wait for response packet from server. When
      * response is received, it will be split by the "_" character and decrypted by the key value. The ssn value output
      * to user is based on if response received is "-1" or a ssn value. If ssn is "-1" then response is "Invalid user
      * name"
@@ -42,11 +42,10 @@ public class ClientUDP {
         Scanner input = new Scanner(System.in);
 
         try {
-            // Set up connection with server on IP address "___" and port number 3000
+            // Set up connection with server on IP address "192.168.0.156" and port number 3000
             DatagramSocket clientSocket = new DatagramSocket();
             serverPort = 3000;
-            // TODO CHANGE TO SERVER IP WHEN FINISHED
-            serverAddress = InetAddress.getByName("localhost");
+            serverAddress = InetAddress.getByName("192.168.0.156");
 
             // Loop till name input is correct
             do {
