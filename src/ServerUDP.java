@@ -2,10 +2,16 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
-import java.net.InetAddress;
 import java.util.LinkedList;
 import java.util.Scanner;
 
+/**
+ * Class: ServerUDP, Used to connect with ClientUDP to search through database to entry that matches first and last name
+ * inputs passed by client. If matching entry is found then ssn value will be returned to client but if it isn't then -1
+ * will be returned. Server will be running on IP "___".
+ *
+ * @author Anthony Peters
+ */
 public class ServerUDP {
     public static void main(String[] args) throws FileNotFoundException {
         // Initialize server data
